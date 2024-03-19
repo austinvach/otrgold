@@ -77,6 +77,14 @@
         audioPlayerDiv.classList.remove('visible');
       }
     });
+
+    audioPlayer.addEventListener('pause', function() {
+      seriesTitleVideo.pause();
+    });
+
+    audioPlayer.addEventListener('play', function() {
+      seriesTitleVideo.play();
+    });
   </script>
 
 </body>
