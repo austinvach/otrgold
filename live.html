@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>OTR Gold</title>
+  <link href="src/output.css" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <style>
+    .fade-out {
+      opacity: 0;
+      transition: opacity 1s;
+    }
+
+    .visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="userInputDiv" class="px-2 text-center mt-6">
+    <h1 class="text-3xl">OTR Gold</h1>
+    <h1 class="text-xl">Enter the podcast URL to get started.</h1>
+    <form id="userInputForm" class="mt-4">
+      <div class="join">
+        <input class="input input-bordered join-item" id="userInputTextBox" type="text" placeholder="Enclosure URL"
+          class="input input-bordered w-full max-w-xs" required />
+        <button class="btn join-item" type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+  <div id="videoPlayerDiv" class="hidden relative">
+    <video id="seriesTitleVideo" class="h-screen mx-auto" loop muted>
+      <source src="assets/inner-sanctum.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <video id="introVideo" class="fixed top-0 left-0 h-screen w-full mx-auto" muted>
+      <source src="assets/intro.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div id="audioPlayerDiv" class="hidden p-1 fixed bottom-0 left-0 w-full opacity-0 transition-opacity">
+    <audio id="audioPlayer" class="m-auto" controls></audio>
+  </div>
+
+  <script>
+    var userInputDiv = document.getElementById('userInputDiv');
+    var userInputForm = document.getElementById('userInputForm');
+    var userInputTextBox = document.getElementById('userInputTextBox');
+    var videoPlayerDiv = document.getElementById('videoPlayerDiv');
+    var audioPlayerDiv = document.getElementById('audioPlayerDiv');
+    var audioPlayer = document.getElementById('audioPlayer');
+    var introVideo = document.getElementById('introVideo');
+    var seriesTitleVideo = document.getElementById('seriesTitleVideo');
+    var introInProgress = true;
+
+    userInputForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      audioPlayer.src = userInputTextBox.value;
+      audioPlayer.play();
+      introVideo.play();
+      userInputDiv.classList.add('hidden');
+      videoPlayerDiv.classList.remove('hidden');
+      audioPlayerDiv.classList.remove('hidden');
+    });
+
+    introVideo.addEventListener('play', function () {
+      setTimeout(function () {
+        introVideo.classList.add('fade-out');
+        seriesTitleVideo.play();
+        introInProgress = false;
+      }, 5000);
+    });
+
+    document.addEventListener('mousemove', function (event) {
+      if (window.innerHeight - event.clientY < 50) {
+        audioPlayerDiv.classList.add('visible');
+      } else {
+        audioPlayerDiv.classList.remove('visible');
+      }
+    });
+
+    audioPlayer.addEventListener('pause', function () {
+      if(introInProgress) {
+        introVideo.pause();
+      }else{
+        seriesTitleVideo.pause();
+      }
+    });
+
+    audioPlayer.addEventListener('play', function () {
+      if(introInProgress) {
+        introVideo.play();
+      }else{
+        seriesTitleVideo.play();
+      }
+      
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.code === 'Space') {
+        if (audioPlayer.paused) {
+          audioPlayer.play();
+        } else {
+          audioPlayer.pause();
+        }
+        event.preventDefault(); // Prevent the default action (scrolling)
+      }
+      // if (event.code === 'Escape') {
+      //   exitFullscreen();
+      //   console.log('exitFullscreen');
+      // }
+    });
+
+    // function exitFullscreen() {
+    //   if (document.exitFullscreen) {
+    //     document.exitFullscreen();
+    //   } else if (document.webkitExitFullscreen) { /* Safari */
+    //     document.webkitExitFullscreen();
+    //   } else if (document.msExitFullscreen) { /* IE11 */
+    //     document.msExitFullscreen();
+    //   } else if (document.mozCancelFullScreen) { /* Firefox */
+    //     document.mozCancelFullScreen();
+    //   }
+    // }
+  </script>
+
+</body>
+
+</html>
