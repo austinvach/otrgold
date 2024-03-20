@@ -2,7 +2,6 @@
 ### [Install Tailwind CSS](https://tailwindcss.com/docs/installation)
 ```
 npm install -D tailwindcss
-npx tailwindcss init
 ```
 ### [Install Tailwind Typography](https://github.com/tailwindlabs/tailwindcss-typography)
 ```
@@ -16,5 +15,6 @@ npm i -D daisyui@latest
 
 ### Start the Tailwind Build Process
 ```
+npx tailwindcss init
 npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
 ```
