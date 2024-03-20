@@ -24,10 +24,12 @@
     <form id="userInputForm" class="mt-4">
       <div class="join">
         <input class="input input-bordered join-item" id="userInputTextBox" type="text" placeholder="Enclosure URL"
-          class="input input-bordered w-full max-w-xs" required />
-        <button class="btn join-item" type="submit">Submit</button>
+          class="input input-bordered w-full max-w-xs" />
+          <input class="input input-bordered join-item" id="podcastUrlInput" type="text" placeholder="Podcast RSS URL" required />
+          <button class="btn join-item" type="submit">Submit</button>
       </div>
     </form>
+    <div id="episodeList"></div>
   </div>
   <div id="videoPlayerDiv" class="hidden relative">
     <video id="seriesTitleVideo" class="h-screen mx-auto" loop muted>
@@ -123,6 +125,25 @@
     //     document.mozCancelFullScreen();
     //   }
     // }
+
+    document.getElementById('userInputForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var podcastUrl = document.getElementById('podcastUrlInput').value;
+    fetch(podcastUrl)
+      .then(response => response.text())
+      .then(data => {
+        var parser = new DOMParser();
+        var xmlDoc = parser.parseFromString(data, "text/xml");
+        var items = xmlDoc.getElementsByTagName('item');
+        var episodeList = document.getElementById('episodeList');
+        episodeList.innerHTML = '';
+        for (var i = 0; i < items.length; i++) {
+          var listItem = document.createElement('li');
+          listItem.textContent = items[i].getElementsByTagName('title')[0].textContent;
+          episodeList.appendChild(listItem);
+        }
+      });
+  });
   </script>
 
 </body>
