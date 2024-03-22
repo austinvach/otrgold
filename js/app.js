@@ -1,14 +1,13 @@
-var navbar = document.getElementById("navbar");
-var episodeSelectionDiv = document.getElementById("episodeSelectionDiv");
-var seriesDropdown = document.getElementById("seriesDropdown");
-var episodeDropdown = document.getElementById("episodeDropdown");
-var audioPlayer = document.getElementById("audioPlayer");
-var audioPlayerDiv = document.getElementById("audioPlayerDiv");
-var videoPlayerDiv = document.getElementById("videoPlayerDiv");
-var introVideo = document.getElementById("introVideo");
-var seriesTitleVideo = document.getElementById("seriesTitleVideo");
-var playbackStarted = false;
-var introInProgress = true;
+const navbar = document.getElementById("navbar");
+const episodeSelectionDiv = document.getElementById("episodeSelectionDiv");
+const seriesDropdown = document.getElementById("seriesDropdown");
+const episodeDropdown = document.getElementById("episodeDropdown");
+const audioPlayerDiv = document.getElementById("audioPlayerDiv");
+const audioPlayer = document.getElementById("audioPlayer");
+const videoPlayerDiv = document.getElementById("videoPlayerDiv");
+const introVideo = document.getElementById("introVideo");
+const seriesVideo = document.getElementById("seriesVideo");
+const transitionDelay = 5;
 const series = {
   "21st Precinct": {
     videoId: "21st-precinct",
@@ -75,36 +74,131 @@ const series = {
     feed: "https://feeds.megaphone.fm/VKRX5983157895",
   },
 };
+let playIntro;
+let selectedSeries;
+let selectedEpisode;
+let currentTimestamp;
 
-document.addEventListener("DOMContentLoaded", (e) => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Populates the emoji category dropdowns.
+  checkLocalStorage();
   populateSeriesDropdown();
-  populateEpisodeDropdown();
+  await populateEpisodeDropdown();
 });
+
+function getSelectedValue(id) {
+  return document.getElementById(id).selectedOptions[0].value;
+}
+
+document.addEventListener("click", async (e) => {
+  switch (e.target.id) {
+    case "seriesDropdown":
+      populateEpisodeDropdown();
+      break;
+    case "start":
+      audioPlayer.src = episodeDropdown.value;
+      seriesVideo.src = `assets/titles/${series[seriesDropdown.value].videoId}.mp4`;
+      navbar.classList.remove("visible");
+      episodeSelectionDiv.classList.add("hidden");
+      audioPlayerDiv.classList.remove("hidden");
+      videoPlayerDiv.classList.remove("hidden");
+      selectedSeries = getSelectedValue("seriesDropdown");
+      selectedEpisode = getSelectedValue("episodeDropdown");
+      saveUserSettings();
+      break;
+    case "introVideo":
+      playPause();
+      break;
+    case "exitButton":
+      exitFunction();
+      break;
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  switch (e.key) {
+    case " ":
+      playPause();
+      break;
+    case "r":
+      stopAndReset(seriesVideo);
+      stopAndReset(introVideo);
+      stopAndReset(audioPlayer);
+      if (introVideo.classList.contains("fadeOut")) {
+        introVideo.classList.remove("fadeOut");
+      }
+      break;
+    case "Escape":
+      exitFunction();
+      break;
+  }
+  e.preventDefault(); // Prevent the default action (scrolling)
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!audioPlayer.paused) {
+    e.clientY < 50
+      ? navbar.classList.add("visible")
+      : navbar.classList.remove("visible");
+  }
+});
+
+audioPlayer.addEventListener("pause", () => {
+  !introVideo.paused
+    ? introVideo.pause()
+    : !seriesVideo.paused && seriesVideo.pause();
+});
+
+audioPlayer.addEventListener("play", () => {
+  playIntro ? introVideo.play() : seriesVideo.play();
+});
+
+introVideo.addEventListener('timeupdate', function() {
+  if (this.currentTime >= transitionDelay && playIntro) {
+    this.classList.add("fadeOut");
+    seriesVideo.play();
+    playIntro = false;
+  }
+});
+
+function exitFunction() {
+  audioPlayer.pause();
+  seriesVideo.pause();
+  navbar.classList.add("visible");
+  episodeSelectionDiv.classList.remove("hidden");
+  audioPlayerDiv.classList.add("hidden");
+  videoPlayerDiv.classList.add("hidden");
+}
+
+function playPause() {
+  if (audioPlayer.paused) {
+    playIntro = audioPlayer.currentTime <= transitionDelay;
+    audioPlayer.play();
+  } else {
+    audioPlayer.pause();
+  }
+}
 
 // This function populates the series dropdown with options.
 function populateSeriesDropdown() {
   // console.log('populateSeriesDropdown');
-  const seriesDropdown = document.getElementById("seriesDropdown");
-
   Object.entries(series).forEach(([key, value]) => {
-    const isSelected = key === "Suspense";
+    const isSelected = selectedSeries === key;
+    // const isSelected = key === "Suspense";
     const option = new Option(key, key, false, isSelected);
     seriesDropdown.append(option);
   });
 }
 
-function populateEpisodeDropdown() {
+async function populateEpisodeDropdown() {
   // console.log('populateEpisodeDropdown');
-  var selectedSeries = document.getElementById("seriesDropdown").value;
-  var podcastUrl = series[selectedSeries].feed;
+  const podcastUrl = series[seriesDropdown.value].feed;
   fetch(podcastUrl)
     .then((response) => response.text())
     .then((data) => {
       var parser = new DOMParser();
       var xmlDoc = parser.parseFromString(data, "text/xml");
       var items = xmlDoc.getElementsByTagName("item");
-      var episodeDropdown = document.getElementById("episodeDropdown");
       episodeDropdown.innerHTML = "";
       for (var i = 0; i < items.length; i++) {
         var episodeUrl = items[i]
@@ -112,94 +206,18 @@ function populateEpisodeDropdown() {
           .getAttribute("url");
         var episodeTitle =
           items[i].getElementsByTagName("title")[0].textContent;
-        const option = new Option(episodeTitle, episodeUrl, false, false);
+        const isSelected = selectedEpisode === episodeTitle;
+        const option = new Option(episodeTitle, episodeUrl, false, isSelected);
         episodeDropdown.prepend(option);
       }
       episodeDropdown.selectedIndex = 0;
     });
 }
 
-// Helper function to add event listeners.
-function addEventListenerById(id, event, handler) {
-  document.getElementById(id).addEventListener(event, handler);
+function stopAndReset(media) {
+  media.pause();
+  media.currentTime = 0;
 }
-
-addEventListenerById("seriesDropdown", "change", (e) => {
-  populateEpisodeDropdown();
-});
-
-addEventListenerById("start", "click", (e) => {
-  audioPlayer.src = document.getElementById("episodeDropdown").value;
-  audioPlayer.play();
-  var selectedSeries = document.getElementById("seriesDropdown").value;
-  var seriesVideoId = series[selectedSeries].videoId;
-  seriesTitleVideo.src = `assets/titles/${seriesVideoId}.mp4`;
-  navbar.classList.remove("visible");
-  episodeSelectionDiv.classList.add("hidden");
-  audioPlayerDiv.classList.remove("hidden");
-  videoPlayerDiv.classList.remove("hidden");
-  introVideo.play();
-  playbackStarted = true;
-});
-
-addEventListenerById("introVideo", "play", (e) => {
-  setTimeout(function () {
-    introVideo.classList.add("fade-out");
-    seriesTitleVideo.play();
-    introInProgress = false;
-  }, 5000);
-});
-
-addEventListenerById("audioPlayer", "pause", (e) => {
-  if (introInProgress) {
-    introVideo.pause();
-  } else {
-    seriesTitleVideo.pause();
-  }
-});
-
-addEventListenerById("audioPlayer", "play", (e) => {
-  if (introInProgress) {
-    introVideo.play();
-  } else {
-    seriesTitleVideo.play();
-  }
-});
-
-addEventListenerById("exitButton", "click", (e) => {
-  audioPlayer.pause();
-  seriesTitleVideo.pause();
-  navbar.classList.add("visible");
-  episodeSelectionDiv.classList.remove("hidden");
-  audioPlayerDiv.classList.add("hidden");
-  videoPlayerDiv.classList.add("hidden");
-  playbackStarted = false;
-});
-
-document.addEventListener("mousemove", function (event) {
-  if (playbackStarted) {
-    if (event.clientY < 50) {
-      navbar.classList.add("visible");
-    } else {
-      navbar.classList.remove("visible");
-    }
-  }
-});
-
-document.addEventListener("keydown", function (event) {
-  if (event.code === "Space") {
-    if (audioPlayer.paused) {
-      audioPlayer.play();
-    } else {
-      audioPlayer.pause();
-    }
-    event.preventDefault(); // Prevent the default action (scrolling)
-  }
-});
-
-///////////////////////////////////////////
-// SETUP FUNCTIONS - ONLY RUN WHEN THE PAGE IS LOADED/RELOADED
-///////////////////////////////////////////
 
 // Helper function to check if the specified type of web storage is available.
 function storageAvailable(type) {
@@ -233,32 +251,34 @@ function storageAvailable(type) {
 // This function checks if local storage is available and retrieves any saved user preferences.
 function checkLocalStorage() {
   // Checks if local storage is available.
-  if (// This function checks if a specific type of web storage is available.
-function storageAvailable(type) {
-  try {
-    // Define a test string.
-    const x = "__storage_test__";
-    // Try to use the storage.
-    window[type].setItem(x, x);
-    // Try to remove the test item from the storage.
-    window[type].removeItem(x);
-    // If both operations are successful, then the storage is available.
-    return true;
-  } catch (e) {
-    // If any of the operations fail, then the storage might not be available.
-    // The function checks for specific error codes and names that indicate quota exceeded errors.
-    // It also checks if there's already something in the storage.
-    return (
-      e instanceof DOMException &&
-      (e.code === 22 ||
-        e.code === 1014 ||
-        e.name === "QuotaExceededError" ||
-        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
-      window[type] &&
-      window[type].length !== 0
-    );
-  }
-}("localStorage")) {
+  if (
+    // This function checks if a specific type of web storage is available.
+    (function storageAvailable(type) {
+      try {
+        // Define a test string.
+        const x = "__storage_test__";
+        // Try to use the storage.
+        window[type].setItem(x, x);
+        // Try to remove the test item from the storage.
+        window[type].removeItem(x);
+        // If both operations are successful, then the storage is available.
+        return true;
+      } catch (e) {
+        // If any of the operations fail, then the storage might not be available.
+        // The function checks for specific error codes and names that indicate quota exceeded errors.
+        // It also checks if there's already something in the storage.
+        return (
+          e instanceof DOMException &&
+          (e.code === 22 ||
+            e.code === 1014 ||
+            e.name === "QuotaExceededError" ||
+            e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+          window[type] &&
+          window[type].length !== 0
+        );
+      }
+    })("localStorage")
+  ) {
     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
     selectedSeries = localStorage.getItem("selectedSeries");
     selectedEpisode = localStorage.getItem("selectedEpisode");
