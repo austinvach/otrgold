@@ -1,8 +1,13 @@
-var videoPlayerDiv = document.getElementById("videoPlayerDiv");
-var audioPlayerDiv = document.getElementById("audioPlayerDiv");
+var navbar = document.getElementById("navbar");
+var episodeSelectionDiv = document.getElementById("episodeSelectionDiv");
+var seriesDropdown = document.getElementById("seriesDropdown");
+var episodeDropdown = document.getElementById("episodeDropdown");
 var audioPlayer = document.getElementById("audioPlayer");
+var audioPlayerDiv = document.getElementById("audioPlayerDiv");
+var videoPlayerDiv = document.getElementById("videoPlayerDiv");
 var introVideo = document.getElementById("introVideo");
 var seriesTitleVideo = document.getElementById("seriesTitleVideo");
+var playbackStarted = false;
 var introInProgress = true;
 const series = {
   "21st Precinct": {
@@ -124,15 +129,17 @@ addEventListenerById("seriesDropdown", "change", (e) => {
 });
 
 addEventListenerById("start", "click", (e) => {
-  console.log("start", audioPlayer.src);
   audioPlayer.src = document.getElementById("episodeDropdown").value;
   audioPlayer.play();
   var selectedSeries = document.getElementById("seriesDropdown").value;
   var seriesVideoId = series[selectedSeries].videoId;
   seriesTitleVideo.src = `assets/titles/${seriesVideoId}.mp4`;
-  introVideo.play();
-  videoPlayerDiv.classList.remove("hidden");
+  navbar.classList.remove("visible");
+  episodeSelectionDiv.classList.add("hidden");
   audioPlayerDiv.classList.remove("hidden");
+  videoPlayerDiv.classList.remove("hidden");
+  introVideo.play();
+  playbackStarted = true;
 });
 
 addEventListenerById("introVideo", "play", (e) => {
@@ -143,27 +150,39 @@ addEventListenerById("introVideo", "play", (e) => {
   }, 5000);
 });
 
-audioPlayer.addEventListener("pause", function () {
-    if (introInProgress) {
-      introVideo.pause();
-    } else {
-      seriesTitleVideo.pause();
-    }
-  });
-  
-  audioPlayer.addEventListener("play", function () {
-    if (introInProgress) {
-      introVideo.play();
-    } else {
-      seriesTitleVideo.play();
-    }
-  });
+addEventListenerById("audioPlayer", "pause", (e) => {
+  if (introInProgress) {
+    introVideo.pause();
+  } else {
+    seriesTitleVideo.pause();
+  }
+});
+
+addEventListenerById("audioPlayer", "play", (e) => {
+  if (introInProgress) {
+    introVideo.play();
+  } else {
+    seriesTitleVideo.play();
+  }
+});
+
+addEventListenerById("exitButton", "click", (e) => {
+  audioPlayer.pause();
+  seriesTitleVideo.pause();
+  navbar.classList.add("visible");
+  episodeSelectionDiv.classList.remove("hidden");
+  audioPlayerDiv.classList.add("hidden");
+  videoPlayerDiv.classList.add("hidden");
+  playbackStarted = false;
+});
 
 document.addEventListener("mousemove", function (event) {
-  if (window.innerHeight - event.clientY < 50) {
-    audioPlayerDiv.classList.add("visible");
-  } else {
-    audioPlayerDiv.classList.remove("visible");
+  if (playbackStarted) {
+    if (event.clientY < 50) {
+      navbar.classList.add("visible");
+    } else {
+      navbar.classList.remove("visible");
+    }
   }
 });
 
@@ -176,116 +195,84 @@ document.addEventListener("keydown", function (event) {
     }
     event.preventDefault(); // Prevent the default action (scrolling)
   }
-  // if (event.code === 'Escape') {
-  //   exitFullscreen();
-  //   console.log('exitFullscreen');
-  // }
 });
 
-// // Helper function to get the selected value from a dropdown.
-// function getSelectedValue(id) {
-//   return document.getElementById(id).selectedOptions[0].value;
-// }
+///////////////////////////////////////////
+// SETUP FUNCTIONS - ONLY RUN WHEN THE PAGE IS LOADED/RELOADED
+///////////////////////////////////////////
 
+// Helper function to check if the specified type of web storage is available.
+function storageAvailable(type) {
+  let storage;
+  try {
+    // Try to use the storage.
+    storage = window[type];
+    const x = "STORAGE_TEST";
+    // Try to set an item.
+    storage.setItem(x, x);
+    // Try to remove the item.
+    storage.removeItem(x);
+    // If all the above operations are successful, then the storage is available.
+    return true;
+  } catch (e) {
+    // If any of the operations fail, then the storage might not be available.
+    // The function checks for specific error codes and names that indicate quota exceeded errors.
+    // It also checks if there's already something in the storage.
+    return (
+      e instanceof DOMException &&
+      (e.code === 22 ||
+        e.code === 1014 ||
+        e.name === "QuotaExceededError" ||
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+      storage &&
+      storage.length !== 0
+    );
+  }
+}
 
-// function exitFullscreen() {
-//   if (document.exitFullscreen) {
-//     document.exitFullscreen();
-//   } else if (document.webkitExitFullscreen) { /* Safari */
-//     document.webkitExitFullscreen();
-//   } else if (document.msExitFullscreen) { /* IE11 */
-//     document.msExitFullscreen();
-//   } else if (document.mozCancelFullScreen) { /* Firefox */
-//     document.mozCancelFullScreen();
-//   }
-// }
+// This function checks if local storage is available and retrieves any saved user preferences.
+function checkLocalStorage() {
+  // Checks if local storage is available.
+  if (// This function checks if a specific type of web storage is available.
+function storageAvailable(type) {
+  try {
+    // Define a test string.
+    const x = "__storage_test__";
+    // Try to use the storage.
+    window[type].setItem(x, x);
+    // Try to remove the test item from the storage.
+    window[type].removeItem(x);
+    // If both operations are successful, then the storage is available.
+    return true;
+  } catch (e) {
+    // If any of the operations fail, then the storage might not be available.
+    // The function checks for specific error codes and names that indicate quota exceeded errors.
+    // It also checks if there's already something in the storage.
+    return (
+      e instanceof DOMException &&
+      (e.code === 22 ||
+        e.code === 1014 ||
+        e.name === "QuotaExceededError" ||
+        e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+      window[type] &&
+      window[type].length !== 0
+    );
+  }
+}("localStorage")) {
+    // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
+    selectedSeries = localStorage.getItem("selectedSeries");
+    selectedEpisode = localStorage.getItem("selectedEpisode");
+    currentTimestamp = localStorage.getItem("currentTimestamp");
+  } else {
+    // Logs a message to the console if local storage is not available.
+    console.log("LOCAL STORAGE NOT AVAILABLE");
+  }
+}
 
-// ///////////////////////////////////////////
-// // SETUP FUNCTIONS - ONLY RUN WHEN THE PAGE IS LOADED/RELOADED
-// ///////////////////////////////////////////
-
-// // Helper function to check if the specified type of web storage is available.
-// function storageAvailable(type) {
-//   let storage;
-//   try {
-//     // Try to use the storage.
-//     storage = window[type];
-//     const x = "STORAGE_TEST";
-//     // Try to set an item.
-//     storage.setItem(x, x);
-//     // Try to remove the item.
-//     storage.removeItem(x);
-//     // If all the above operations are successful, then the storage is available.
-//     return true;
-//   } catch (e) {
-//     // If any of the operations fail, then the storage might not be available.
-//     // The function checks for specific error codes and names that indicate quota exceeded errors.
-//     // It also checks if there's already something in the storage.
-//     return (
-//       e instanceof DOMException &&
-//       (e.code === 22 ||
-//         e.code === 1014 ||
-//         e.name === "QuotaExceededError" ||
-//         e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
-//       storage &&
-//       storage.length !== 0
-//     );
-//   }
-// }
-
-// // This function checks if local storage is available and retrieves any saved user preferences.
-// function checkLocalStorage() {
-//   // Checks if local storage is available.
-//   if (// This function checks if a specific type of web storage is available.
-// function storageAvailable(type) {
-//   try {
-//     // Define a test string.
-//     const x = "__storage_test__";
-//     // Try to use the storage.
-//     window[type].setItem(x, x);
-//     // Try to remove the test item from the storage.
-//     window[type].removeItem(x);
-//     // If both operations are successful, then the storage is available.
-//     return true;
-//   } catch (e) {
-//     // If any of the operations fail, then the storage might not be available.
-//     // The function checks for specific error codes and names that indicate quota exceeded errors.
-//     // It also checks if there's already something in the storage.
-//     return (
-//       e instanceof DOMException &&
-//       (e.code === 22 ||
-//         e.code === 1014 ||
-//         e.name === "QuotaExceededError" ||
-//         e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
-//       window[type] &&
-//       window[type].length !== 0
-//     );
-//   }
-// }("localStorage")) {
-//     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
-//     selectedEmojiCategory = localStorage.getItem("selectedEmojiCategory");
-//     selectedEmojiSkinTone = localStorage.getItem("selectedEmojiSkinTone");
-//     selectedCardPreviewTime = localStorage.getItem("selectedCardPreviewTime") || "8000";
-//     selectedCardCount = localStorage.getItem("selectedCardCount") || 32;
-//   } else {
-//     // Logs a message to the console if local storage is not available.
-//     console.log("LOCAL STORAGE NOT AVAILABLE");
-//   }
-// }
-
-// // This function listens for keydown events.
-// window.onkeydown = function (k) {
-//   // Reset the game if the user presses the space bar, which has a key code of 32.
-//   if (k.keyCode === 32) {
-//     reset();
-//   }
-// };
-
-// // This function saves the user's settings to local storage.
-// function saveUserSettings() {
-//   // Save the selected emoji category, skin tone, and card preview time to local storage.
-//   localStorage.setItem("selectedEmojiCategory", selectedEmojiCategory);
-//   localStorage.setItem("selectedEmojiSkinTone", selectedEmojiSkinTone);
-//   localStorage.setItem("selectedCardPreviewTime", selectedCardPreviewTime);
-//   localStorage.setItem("selectedCardCount", selectedCardCount);
-// }
+// This function saves the user's settings to local storage.
+function saveUserSettings() {
+  // Save the selected emoji category, skin tone, and card preview time to local storage.
+  localStorage.setItem("selectedSeries", selectedSeries);
+  localStorage.setItem("selectedEpisode", selectedEpisode);
+  localStorage.setItem("currentTimestamp", currentTimestamp);
+}
