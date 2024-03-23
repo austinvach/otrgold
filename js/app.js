@@ -127,15 +127,23 @@ document.getElementById('seriesDropdown').addEventListener('change', (e) => {
   saveUserSettings();
 });
 
-// NEEDED
 episodeDropdown.addEventListener('change', (e) => {
   selectedSeries = getSelectedValue("seriesDropdown");
-  selectedEpisodes[selectedSeries] = episodeDropdown.selectedOptions[0].text;
+  selectedEpisodes[selectedSeries] = {
+    ...selectedEpisodes[selectedSeries],
+    [episodeDropdown.selectedOptions[0].text]: {
+      currentTime: audioPlayer.currentTime
+    }
+  }
   saveUserSettings();
 });
 
 audioPlayer.addEventListener('timeupdate', (e) => {
   currentTimestamp = audioPlayer.currentTime;
+  selectedEpisodes[selectedSeries] = {
+    ...selectedEpisodes[selectedSeries],
+    [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
+  }
   saveUserSettings();
 });
 
@@ -307,8 +315,7 @@ function checkLocalStorage() {
     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
     selectedSeries = localStorage.getItem("selectedSeries") || 'none';
     selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
-    currentTimestamp = localStorage.getItem("currentTimestamp") || 0;
-    console.log(selectedSeries, selectedEpisodes, currentTimestamp);
+    console.log(selectedSeries, selectedEpisodes);
   } else {
     // Logs a message to the console if local storage is not available.
     console.log("LOCAL STORAGE NOT AVAILABLE");
@@ -321,5 +328,4 @@ function saveUserSettings() {
   // Save the selected emoji category, skin tone, and card preview time to local storage.
   localStorage.setItem("selectedSeries", selectedSeries);
   localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
-  localStorage.setItem("currentTimestamp", currentTimestamp);
 }
