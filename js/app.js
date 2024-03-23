@@ -76,14 +76,14 @@ const series = {
 };
 let playIntro;
 let selectedSeries;
-let selectedEpisode;
+let selectedEpisodes;
 let currentTimestamp;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // Populates the emoji category dropdowns.
   checkLocalStorage();
   populateSeriesDropdown();
-  await populateEpisodeDropdown();
+  populateEpisodeDropdown();
 });
 
 function getSelectedValue(id) {
@@ -103,8 +103,6 @@ document.addEventListener("click", async (e) => {
       audioPlayerDiv.classList.remove("hidden");
       videoPlayerDiv.classList.remove("hidden");
       selectedSeries = getSelectedValue("seriesDropdown");
-      selectedEpisode = getSelectedValue("episodeDropdown");
-      saveUserSettings();
       break;
     case "introVideo":
       playPause();
@@ -113,6 +111,32 @@ document.addEventListener("click", async (e) => {
       exitFunction();
       break;
   }
+});
+
+document.getElementById('seriesDropdown').addEventListener('change', (e) => {
+  selectedSeries = getSelectedValue("seriesDropdown");
+
+  // Get the index of the last selected episode for the selected series, or 0 if there's no last selected episode
+  let selectedIndex = selectedEpisodes[selectedSeries] 
+    ? Array.from(episodeDropdown.options).findIndex(option => option.text === selectedEpisodes[selectedSeries]) 
+    : 0;
+
+  // Set the selected index of the episodeDropdown
+  episodeDropdown.selectedIndex = selectedIndex;
+
+  saveUserSettings();
+});
+
+// NEEDED
+episodeDropdown.addEventListener('change', (e) => {
+  selectedSeries = getSelectedValue("seriesDropdown");
+  selectedEpisodes[selectedSeries] = episodeDropdown.selectedOptions[0].text;
+  saveUserSettings();
+});
+
+audioPlayer.addEventListener('timeupdate', (e) => {
+  currentTimestamp = audioPlayer.currentTime;
+  saveUserSettings();
 });
 
 document.addEventListener("keydown", (e) => {
@@ -184,13 +208,12 @@ function populateSeriesDropdown() {
   // console.log('populateSeriesDropdown');
   Object.entries(series).forEach(([key, value]) => {
     const isSelected = selectedSeries === key;
-    // const isSelected = key === "Suspense";
     const option = new Option(key, key, false, isSelected);
     seriesDropdown.append(option);
   });
 }
 
-async function populateEpisodeDropdown() {
+function populateEpisodeDropdown() {
   // console.log('populateEpisodeDropdown');
   const podcastUrl = series[seriesDropdown.value].feed;
   fetch(podcastUrl)
@@ -206,11 +229,13 @@ async function populateEpisodeDropdown() {
           .getAttribute("url");
         var episodeTitle =
           items[i].getElementsByTagName("title")[0].textContent;
-        const isSelected = selectedEpisode === episodeTitle;
+        const isSelected = selectedEpisodes[selectedSeries] === episodeTitle;
         const option = new Option(episodeTitle, episodeUrl, false, isSelected);
         episodeDropdown.prepend(option);
       }
-      episodeDropdown.selectedIndex = 0;
+      if(!selectedEpisodes[selectedSeries]){
+        episodeDropdown.selectedIndex = 0;
+      }
     });
 }
 
@@ -280,9 +305,10 @@ function checkLocalStorage() {
     })("localStorage")
   ) {
     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
-    selectedSeries = localStorage.getItem("selectedSeries");
-    selectedEpisode = localStorage.getItem("selectedEpisode");
-    currentTimestamp = localStorage.getItem("currentTimestamp");
+    selectedSeries = localStorage.getItem("selectedSeries") || 'none';
+    selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
+    currentTimestamp = localStorage.getItem("currentTimestamp") || 0;
+    console.log(selectedSeries, selectedEpisodes, currentTimestamp);
   } else {
     // Logs a message to the console if local storage is not available.
     console.log("LOCAL STORAGE NOT AVAILABLE");
@@ -291,8 +317,9 @@ function checkLocalStorage() {
 
 // This function saves the user's settings to local storage.
 function saveUserSettings() {
+  console.log('saveUserSettings');
   // Save the selected emoji category, skin tone, and card preview time to local storage.
   localStorage.setItem("selectedSeries", selectedSeries);
-  localStorage.setItem("selectedEpisode", selectedEpisode);
+  localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
   localStorage.setItem("currentTimestamp", currentTimestamp);
 }
