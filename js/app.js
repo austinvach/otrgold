@@ -76,9 +76,9 @@ const series = {
 };
 let playIntro;
 let selectedSeries;
+let selectedEpisode;
 let selectedEpisodes;
 let listeningHistory;
-let currentTimestamp;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // Populates the emoji category dropdowns.
@@ -86,10 +86,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   populateSeriesDropdown();
   populateEpisodeDropdown();
 });
-
-function getSelectedValue(id) {
-  return document.getElementById(id).selectedOptions[0].value;
-}
 
 document.addEventListener("click", async (e) => {
   switch (e.target.id) {
@@ -103,8 +99,6 @@ document.addEventListener("click", async (e) => {
       episodeSelectionDiv.classList.add("hidden");
       audioPlayerDiv.classList.remove("hidden");
       videoPlayerDiv.classList.remove("hidden");
-      selectedSeries = getSelectedValue("seriesDropdown");
-      selectedEpisodes = getSelectedValue("episodeDropdown");
       break;
     case "introVideo":
       playPause();
@@ -114,43 +108,6 @@ document.addEventListener("click", async (e) => {
       break;
   }
 });
-
-seriesDropdown.addEventListener('change', (e) => {
-  selectedSeries = getSelectedValue("seriesDropdown");
-
-  // Get the index of the last selected episode for the selected series, or 0 if there's no last selected episode
-  let selectedIndex = selectedEpisodes[selectedSeries] 
-    ? Array.from(episodeDropdown.options).findIndex(option => option.text === selectedEpisodes[selectedSeries]) 
-    : 0;
-
-  // Set the selected index of the episodeDropdown
-  episodeDropdown.selectedIndex = selectedIndex;
-
-  saveUserSettings();
-});
-
-episodeDropdown.addEventListener('change', (e) => {
-  selectedSeries = getSelectedValue("seriesDropdown");
-  selectedEpisodes[selectedSeries] = episodeDropdown.selectedOptions[0].text;
-  saveUserSettings();
-  // selectedSeries = getSelectedValue("seriesDropdown");
-  // listeningHistory[selectedSeries] = {
-  //   ...listeningHistory[selectedSeries],
-  //   [episodeDropdown.selectedOptions[0].text]: {
-  //     currentTime: audioPlayer.currentTime
-  //   }
-  // }
-  saveUserSettings();
-});
-
-// audioPlayer.addEventListener('timeupdate', (e) => {
-//   currentTimestamp = audioPlayer.currentTime;
-//   listeningHistory[selectedSeries] = {
-//     ...listeningHistory[selectedSeries],
-//     [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
-//   }
-//   saveUserSettings();
-// });
 
 document.addEventListener("keydown", (e) => {
   switch (e.key) {
@@ -180,6 +137,19 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 
+
+audioPlayer.addEventListener('timeupdate', (e) => {
+  if (!listeningHistory[selectedSeries]) {
+    listeningHistory[selectedSeries] = {};
+  }
+  listeningHistory[selectedSeries] = {
+    ...listeningHistory[selectedSeries],
+    [selectedEpisode]: audioPlayer.currentTime
+  }
+  //console.log("audioPlayer", selectedEpisode);
+  saveUserSettings();
+});
+
 audioPlayer.addEventListener("pause", () => {
   !introVideo.paused
     ? introVideo.pause()
@@ -196,6 +166,28 @@ introVideo.addEventListener('timeupdate', function() {
     seriesVideo.play();
     playIntro = false;
   }
+});
+
+episodeDropdown.addEventListener('change', (e) => {
+  selectedEpisode = episodeDropdown.selectedOptions[0].text;
+  selectedEpisodes[selectedSeries] = selectedEpisode;
+  console.log(selectedEpisodes[selectedSeries]);
+  if (audioPlayer.currentTime > 0) {
+    listeningHistory[selectedSeries] = {
+      ...listeningHistory[selectedSeries],
+      [selectedEpisode]: audioPlayer.currentTime
+    }
+  }
+  saveUserSettings();
+});
+
+seriesDropdown.addEventListener('change', (e) => {
+  selectedSeries = seriesDropdown.value;
+  let selectedIndex = selectedEpisodes[selectedSeries] 
+    ? Array.from(episodeDropdown.options).findIndex(option => option.text === selectedEpisodes[selectedSeries]) 
+    : 0;
+  episodeDropdown.selectedIndex = selectedIndex;
+  saveUserSettings();
 });
 
 function exitFunction() {
@@ -216,30 +208,17 @@ function playPause() {
   }
 }
 
-// This function populates the series dropdown with options.
 function populateSeriesDropdown() {
-  // console.log('populateSeriesDropdown');
   Object.entries(series).forEach(([key, value]) => {
     const isSelected = selectedSeries === key;
-    const option = new Option(key, key, false, isSelected);
+    const option = new Option(key, undefined, false, isSelected);
     seriesDropdown.append(option);
   });
 }
 
-// audioPlayer.addEventListener('timeupdate', (e) => {
-//   currentTimestamp = audioPlayer.currentTime;
-//   listeningHistory[selectedSeries] = {
-//     ...listeningHistory[selectedSeries],
-//     [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
-//   }
-//   saveUserSettings();
-// });
-
-
 function populateEpisodeDropdown() {
-  // console.log('populateEpisodeDropdown');
-  const podcastUrl = series[seriesDropdown.value].feed;
-  fetch(podcastUrl)
+  const feed = series[seriesDropdown.value].feed;
+  fetch(feed)
     .then((response) => response.text())
     .then((data) => {
       var parser = new DOMParser();
@@ -251,13 +230,12 @@ function populateEpisodeDropdown() {
           .getElementsByTagName("enclosure")[0]
           .getAttribute("url");
         var episodeTitle = items[i].getElementsByTagName("title")[0].textContent;
-        // const isSelected = selectedEpisodes === episodeTitle;
-        // const isSelected = listeningHistory[selectedSeries][episodeTitle];
         const isSelected = selectedEpisodes[selectedSeries] === episodeTitle;
         const option = new Option(episodeTitle, episodeUrl, false, isSelected);
         episodeDropdown.prepend(option);
       }
       if(!selectedEpisodes[selectedSeries]){
+        console.log(`No pre-selected episode for "${selectedSeries}"`);
         episodeDropdown.selectedIndex = 0;
       }
     });
@@ -268,7 +246,6 @@ function stopAndReset(media) {
   media.currentTime = 0;
 }
 
-// Helper function to check if the specified type of web storage is available.
 function storageAvailable(type) {
   let storage;
   try {
@@ -297,7 +274,6 @@ function storageAvailable(type) {
   }
 }
 
-// This function checks if local storage is available and retrieves any saved user preferences.
 function checkLocalStorage() {
   // Checks if local storage is available.
   if (
@@ -331,21 +307,18 @@ function checkLocalStorage() {
     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
     selectedSeries = localStorage.getItem("selectedSeries") || 'none';
     selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
-    // listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
-    // console.log(selectedSeries, listeningHistory);
-    console.log(selectedSeries, selectedEpisodes);
+    selectedEpisode = selectedEpisodes[selectedSeries];
+    listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
   } else {
     // Logs a message to the console if local storage is not available.
     console.log("LOCAL STORAGE NOT AVAILABLE");
   }
 }
 
-// This function saves the user's settings to local storage.
 function saveUserSettings() {
-  console.log('saveUserSettings');
   // Save the selected emoji category, skin tone, and card preview time to local storage.
-  localStorage.setItem("selectedSeries", selectedSeries);
+  localStorage.setItem('selectedSeries', selectedSeries);
   localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
-  // localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
-  console.log(selectedSeries, selectedEpisodes);
+  localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
+  console.log(selectedSeries, selectedEpisode, selectedEpisodes, listeningHistory);
 }
