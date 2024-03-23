@@ -190,6 +190,46 @@ seriesDropdown.addEventListener('change', (e) => {
   saveUserSettings();
 });
 
+function checkLocalStorage() {
+  // Checks if local storage is available.
+  if (
+    // This function checks if a specific type of web storage is available.
+    (function storageAvailable(type) {
+      try {
+        // Define a test string.
+        const x = "__storage_test__";
+        // Try to use the storage.
+        window[type].setItem(x, x);
+        // Try to remove the test item from the storage.
+        window[type].removeItem(x);
+        // If both operations are successful, then the storage is available.
+        return true;
+      } catch (e) {
+        // If any of the operations fail, then the storage might not be available.
+        // The function checks for specific error codes and names that indicate quota exceeded errors.
+        // It also checks if there's already something in the storage.
+        return (
+          e instanceof DOMException &&
+          (e.code === 22 ||
+            e.code === 1014 ||
+            e.name === "QuotaExceededError" ||
+            e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+          window[type] &&
+          window[type].length !== 0
+        );
+      }
+    })("localStorage")
+  ) {
+    // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
+    selectedSeries = localStorage.getItem('selectedSeries');
+    selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
+    listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
+  } else {
+    // Logs a message to the console if local storage is not available.
+    console.log("LOCAL STORAGE NOT AVAILABLE");
+  }
+}
+
 function exitFunction() {
   audioPlayer.pause();
   seriesVideo.pause();
@@ -208,14 +248,6 @@ function playPause() {
   }
 }
 
-function populateSeriesDropdown() {
-  Object.entries(series).forEach(([key, value]) => {
-    const isSelected = selectedSeries === key;
-    const option = new Option(key, undefined, false, isSelected);
-    seriesDropdown.append(option);
-  });
-}
-
 function populateEpisodeDropdown() {
   const feed = series[seriesDropdown.value].feed;
   fetch(feed)
@@ -230,7 +262,7 @@ function populateEpisodeDropdown() {
           .getElementsByTagName("enclosure")[0]
           .getAttribute("url");
         var episodeTitle = items[i].getElementsByTagName("title")[0].textContent;
-        const isSelected = selectedEpisodes[selectedSeries] === episodeTitle;
+        var isSelected = selectedEpisodes[selectedSeries] === episodeTitle;
         const option = new Option(episodeTitle, episodeUrl, false, isSelected);
         episodeDropdown.prepend(option);
       }
@@ -239,6 +271,23 @@ function populateEpisodeDropdown() {
         episodeDropdown.selectedIndex = 0;
       }
     });
+}
+
+function populateSeriesDropdown() {
+  Object.entries(series).forEach(([key, value]) => {
+    const isSelected = selectedSeries === key;
+    const option = new Option(key, undefined, false, isSelected);
+    seriesDropdown.append(option);
+  });
+}
+
+function saveUserSettings() {
+  // Save the selected emoji category, skin tone, and card preview time to local storage.
+  selectedEpisode = episodeDropdown.selectedOptions[0].text;
+  localStorage.setItem('selectedSeries', selectedSeries);
+  localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
+  localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
+  console.log(selectedSeries, selectedEpisodes, listeningHistory);
 }
 
 function stopAndReset(media) {
@@ -272,53 +321,4 @@ function storageAvailable(type) {
       storage.length !== 0
     );
   }
-}
-
-function checkLocalStorage() {
-  // Checks if local storage is available.
-  if (
-    // This function checks if a specific type of web storage is available.
-    (function storageAvailable(type) {
-      try {
-        // Define a test string.
-        const x = "__storage_test__";
-        // Try to use the storage.
-        window[type].setItem(x, x);
-        // Try to remove the test item from the storage.
-        window[type].removeItem(x);
-        // If both operations are successful, then the storage is available.
-        return true;
-      } catch (e) {
-        // If any of the operations fail, then the storage might not be available.
-        // The function checks for specific error codes and names that indicate quota exceeded errors.
-        // It also checks if there's already something in the storage.
-        return (
-          e instanceof DOMException &&
-          (e.code === 22 ||
-            e.code === 1014 ||
-            e.name === "QuotaExceededError" ||
-            e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
-          window[type] &&
-          window[type].length !== 0
-        );
-      }
-    })("localStorage")
-  ) {
-    // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
-    selectedSeries = localStorage.getItem("selectedSeries") || 'none';
-    selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
-    selectedEpisode = selectedEpisodes[selectedSeries];
-    listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
-  } else {
-    // Logs a message to the console if local storage is not available.
-    console.log("LOCAL STORAGE NOT AVAILABLE");
-  }
-}
-
-function saveUserSettings() {
-  // Save the selected emoji category, skin tone, and card preview time to local storage.
-  localStorage.setItem('selectedSeries', selectedSeries);
-  localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
-  localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
-  console.log(selectedSeries, selectedEpisode, selectedEpisodes, listeningHistory);
 }
