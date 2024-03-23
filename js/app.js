@@ -77,6 +77,7 @@ const series = {
 let playIntro;
 let selectedSeries;
 let selectedEpisodes;
+let listeningHistory;
 let currentTimestamp;
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -103,6 +104,7 @@ document.addEventListener("click", async (e) => {
       audioPlayerDiv.classList.remove("hidden");
       videoPlayerDiv.classList.remove("hidden");
       selectedSeries = getSelectedValue("seriesDropdown");
+      selectedEpisodes = getSelectedValue("episodeDropdown");
       break;
     case "introVideo":
       playPause();
@@ -113,7 +115,7 @@ document.addEventListener("click", async (e) => {
   }
 });
 
-document.getElementById('seriesDropdown').addEventListener('change', (e) => {
+seriesDropdown.addEventListener('change', (e) => {
   selectedSeries = getSelectedValue("seriesDropdown");
 
   // Get the index of the last selected episode for the selected series, or 0 if there's no last selected episode
@@ -129,23 +131,26 @@ document.getElementById('seriesDropdown').addEventListener('change', (e) => {
 
 episodeDropdown.addEventListener('change', (e) => {
   selectedSeries = getSelectedValue("seriesDropdown");
-  selectedEpisodes[selectedSeries] = {
-    ...selectedEpisodes[selectedSeries],
-    [episodeDropdown.selectedOptions[0].text]: {
-      currentTime: audioPlayer.currentTime
-    }
-  }
+  selectedEpisodes[selectedSeries] = episodeDropdown.selectedOptions[0].text;
+  saveUserSettings();
+  // selectedSeries = getSelectedValue("seriesDropdown");
+  // listeningHistory[selectedSeries] = {
+  //   ...listeningHistory[selectedSeries],
+  //   [episodeDropdown.selectedOptions[0].text]: {
+  //     currentTime: audioPlayer.currentTime
+  //   }
+  // }
   saveUserSettings();
 });
 
-audioPlayer.addEventListener('timeupdate', (e) => {
-  currentTimestamp = audioPlayer.currentTime;
-  selectedEpisodes[selectedSeries] = {
-    ...selectedEpisodes[selectedSeries],
-    [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
-  }
-  saveUserSettings();
-});
+// audioPlayer.addEventListener('timeupdate', (e) => {
+//   currentTimestamp = audioPlayer.currentTime;
+//   listeningHistory[selectedSeries] = {
+//     ...listeningHistory[selectedSeries],
+//     [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
+//   }
+//   saveUserSettings();
+// });
 
 document.addEventListener("keydown", (e) => {
   switch (e.key) {
@@ -221,6 +226,16 @@ function populateSeriesDropdown() {
   });
 }
 
+// audioPlayer.addEventListener('timeupdate', (e) => {
+//   currentTimestamp = audioPlayer.currentTime;
+//   listeningHistory[selectedSeries] = {
+//     ...listeningHistory[selectedSeries],
+//     [episodeDropdown.selectedOptions[0].text]: audioPlayer.currentTime
+//   }
+//   saveUserSettings();
+// });
+
+
 function populateEpisodeDropdown() {
   // console.log('populateEpisodeDropdown');
   const podcastUrl = series[seriesDropdown.value].feed;
@@ -235,8 +250,9 @@ function populateEpisodeDropdown() {
         var episodeUrl = items[i]
           .getElementsByTagName("enclosure")[0]
           .getAttribute("url");
-        var episodeTitle =
-          items[i].getElementsByTagName("title")[0].textContent;
+        var episodeTitle = items[i].getElementsByTagName("title")[0].textContent;
+        // const isSelected = selectedEpisodes === episodeTitle;
+        // const isSelected = listeningHistory[selectedSeries][episodeTitle];
         const isSelected = selectedEpisodes[selectedSeries] === episodeTitle;
         const option = new Option(episodeTitle, episodeUrl, false, isSelected);
         episodeDropdown.prepend(option);
@@ -315,6 +331,8 @@ function checkLocalStorage() {
     // Retrieves the user's selected emoji category, skin tone, and card preview time from local storage.
     selectedSeries = localStorage.getItem("selectedSeries") || 'none';
     selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
+    // listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
+    // console.log(selectedSeries, listeningHistory);
     console.log(selectedSeries, selectedEpisodes);
   } else {
     // Logs a message to the console if local storage is not available.
@@ -328,4 +346,6 @@ function saveUserSettings() {
   // Save the selected emoji category, skin tone, and card preview time to local storage.
   localStorage.setItem("selectedSeries", selectedSeries);
   localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
+  // localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
+  console.log(selectedSeries, selectedEpisodes);
 }
