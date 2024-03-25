@@ -97,7 +97,7 @@ document.addEventListener("click", async (e) => {
       seriesVideo.src = `assets/titles/${series[seriesDropdown.value].videoId}.mp4`;
       navbar.classList.remove("visible");
       episodeSelectionDiv.classList.add("hidden");
-      audioPlayerDiv.classList.remove("hidden");
+      audioPlayerDiv.classList.replace("hidden", "flex");
       videoPlayerDiv.classList.remove("hidden");
       break;
     case "introVideo":
@@ -171,7 +171,6 @@ introVideo.addEventListener('timeupdate', function() {
 episodeDropdown.addEventListener('change', (e) => {
   selectedEpisode = episodeDropdown.selectedOptions[0].text;
   selectedEpisodes[selectedSeries] = selectedEpisode;
-  console.log(selectedEpisodes[selectedSeries]);
   if (audioPlayer.currentTime > 0) {
     listeningHistory[selectedSeries] = {
       ...listeningHistory[selectedSeries],
@@ -187,7 +186,7 @@ seriesDropdown.addEventListener('change', (e) => {
     ? Array.from(episodeDropdown.options).findIndex(option => option.text === selectedEpisodes[selectedSeries]) 
     : 0;
   episodeDropdown.selectedIndex = selectedIndex;
-  saveUserSettings();
+  populateEpisodeDropdown();
 });
 
 function checkLocalStorage() {
@@ -224,6 +223,7 @@ function checkLocalStorage() {
     selectedSeries = localStorage.getItem('selectedSeries');
     selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
     listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
+    console.log("LOADING", selectedEpisodes, listeningHistory);
   } else {
     // Logs a message to the console if local storage is not available.
     console.log("LOCAL STORAGE NOT AVAILABLE");
@@ -267,8 +267,11 @@ function populateEpisodeDropdown() {
         episodeDropdown.prepend(option);
       }
       if(!selectedEpisodes[selectedSeries]){
-        console.log(`No pre-selected episode for "${selectedSeries}"`);
+        console.log(`No pre-selected episode for "${selectedSeries}. Setting to first in the list."`);
         episodeDropdown.selectedIndex = 0;
+        selectedEpisode = episodeDropdown.selectedOptions[0].text;
+        selectedEpisodes[selectedSeries] = selectedEpisode;
+        saveUserSettings();
       }
     });
 }
@@ -279,15 +282,17 @@ function populateSeriesDropdown() {
     const option = new Option(key, undefined, false, isSelected);
     seriesDropdown.append(option);
   });
+  if(!selectedSeries){
+    console.log("No pre-selected series. Setting to first series in the list.");
+    selectedSeries = seriesDropdown.value;
+  }
 }
 
 function saveUserSettings() {
-  // Save the selected emoji category, skin tone, and card preview time to local storage.
-  selectedEpisode = episodeDropdown.selectedOptions[0].text;
   localStorage.setItem('selectedSeries', selectedSeries);
   localStorage.setItem('selectedEpisodes', JSON.stringify(selectedEpisodes));
   localStorage.setItem('listeningHistory', JSON.stringify(listeningHistory));
-  console.log(selectedSeries, selectedEpisodes, listeningHistory);
+  console.log("SAVING", selectedEpisodes, listeningHistory);
 }
 
 function stopAndReset(media) {
