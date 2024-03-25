@@ -9,70 +9,71 @@ const introVideo = document.getElementById("introVideo");
 const seriesVideo = document.getElementById("seriesVideo");
 const transitionDelay = 5;
 const series = {
-  "21st Precinct": {
-    videoId: "21st-precinct",
-    feed: "https://feeds.megaphone.fm/VKRX3382871919",
-  },
-  "Academy Award": {
-    videoId: "academy-award",
-    feed: "https://feeds.megaphone.fm/VKRX3969796462",
-  },
-  "Boston Blackie": {
-    videoId: "boston-blackie",
-    feed: "https://feeds.megaphone.fm/VKRX2949349551",
-  },
-  "Box 13": {
-    videoId: "box-13",
-    feed: "https://feeds.megaphone.fm/VKRX7483366394",
-  },
-  "Casey, Crime Photographer": {
-    videoId: "casey-crime-photographer",
-    feed: "https://feeds.megaphone.fm/VKRX3743269369",
-  },
-  "CBS Radio Mystery Theater": {
-    videoId: "cbsrmt",
-    feed: "https://feeds.megaphone.fm/VKRX3013755423",
-  },
+  // "21st Precinct": {
+  //   videoId: "21st-precinct",
+  //   feed: "https://feeds.megaphone.fm/VKRX3382871919",
+  // },
+  // "Academy Award": {
+  //   videoId: "academy-award",
+  //   feed: "https://feeds.megaphone.fm/VKRX3969796462",
+  // },
+  // "Boston Blackie": {
+  //   videoId: "boston-blackie",
+  //   feed: "https://feeds.megaphone.fm/VKRX2949349551",
+  // },
+  // "Box 13": {
+  //   videoId: "box-13",
+  //   feed: "https://feeds.megaphone.fm/VKRX7483366394",
+  // },
+  // "Casey, Crime Photographer": {
+  //   videoId: "casey-crime-photographer",
+  //   feed: "https://feeds.megaphone.fm/VKRX3743269369",
+  // },
+  // "CBS Radio Mystery Theater": {
+  //   videoId: "cbsrmt",
+  //   feed: "https://feeds.megaphone.fm/VKRX3013755423",
+  // },
   Dragnet: {
     videoId: "dragnet",
-    feed: "https://feeds.megaphone.fm/VKRX6250604841",
-  },
-  Escape: {
-    videoId: "escape",
-    feed: "https://feeds.megaphone.fm/VKRX7138521916",
-  },
-  Gunsmoke: {
-    videoId: "gunsmoke",
-    feed: "https://feeds.megaphone.fm/VKRX5135261643",
-  },
-  "Inner Sanctum": {
-    videoId: "inner-sanctum",
-    feed: "https://feeds.megaphone.fm/VKRX4551496236",
-  },
-  "Richard Diamond, Private Detective": {
-    videoId: "richard-diamond",
-    feed: "https://feeds.megaphone.fm/VKRX8711189538",
-  },
-  Suspense: {
-    videoId: "suspense",
-    feed: "https://feeds.megaphone.fm/VKRX1793797555",
-  },
-  "The Adventures of Philip Marlowe": {
-    videoId: "philip-marlowe",
-    feed: "https://feeds.megaphone.fm/VKRX7325986260",
-  },
-  "The Adventures of Wild Bill Hickok": {
-    videoId: "wild-bill-hickok",
-    feed: "https://feeds.megaphone.fm/VKRX2357501255",
-  },
-  "The Whistler": {
-    videoId: "the-whistler",
-    feed: "https://feeds.megaphone.fm/VKRX5055337755",
-  },
-  "Yours Truly, Johnny Dollar": {
-    videoId: "johnny-dollar",
-    feed: "https://feeds.megaphone.fm/VKRX5983157895",
-  },
+    feed: "https://feeds.megaphone.fm/VKRX4795506165",
+  }
+  // ,
+  // Escape: {
+  //   videoId: "escape",
+  //   feed: "https://feeds.megaphone.fm/VKRX7138521916",
+  // },
+  // Gunsmoke: {
+  //   videoId: "gunsmoke",
+  //   feed: "https://feeds.megaphone.fm/VKRX5135261643",
+  // },
+  // "Inner Sanctum": {
+  //   videoId: "inner-sanctum",
+  //   feed: "https://feeds.megaphone.fm/VKRX4551496236",
+  // },
+  // "Richard Diamond, Private Detective": {
+  //   videoId: "richard-diamond",
+  //   feed: "https://feeds.megaphone.fm/VKRX8711189538",
+  // },
+  // Suspense: {
+  //   videoId: "suspense",
+  //   feed: "https://feeds.megaphone.fm/VKRX1793797555",
+  // },
+  // "The Adventures of Philip Marlowe": {
+  //   videoId: "philip-marlowe",
+  //   feed: "https://feeds.megaphone.fm/VKRX7325986260",
+  // },
+  // "The Adventures of Wild Bill Hickok": {
+  //   videoId: "wild-bill-hickok",
+  //   feed: "https://feeds.megaphone.fm/VKRX2357501255",
+  // },
+  // "The Whistler": {
+  //   videoId: "the-whistler",
+  //   feed: "https://feeds.megaphone.fm/VKRX5055337755",
+  // },
+  // "Yours Truly, Johnny Dollar": {
+  //   videoId: "johnny-dollar",
+  //   feed: "https://feeds.megaphone.fm/VKRX5983157895",
+  // },
 };
 let playIntro;
 let selectedSeries;
@@ -83,6 +84,7 @@ let listeningHistory;
 document.addEventListener("DOMContentLoaded", async () => {
   // Populates the emoji category dropdowns.
   checkLocalStorage();
+  // loadUI();
   populateSeriesDropdown();
   populateEpisodeDropdown();
 });
@@ -223,6 +225,7 @@ function checkLocalStorage() {
     selectedSeries = localStorage.getItem('selectedSeries');
     selectedEpisodes = JSON.parse(localStorage.getItem('selectedEpisodes')) || {};
     listeningHistory = JSON.parse(localStorage.getItem('listeningHistory')) || {};
+    // selectedEpisode = selectedEpisodes[selectedSeries];
     console.log("LOADING", selectedEpisodes, listeningHistory);
   } else {
     // Logs a message to the console if local storage is not available.
@@ -238,6 +241,10 @@ function exitFunction() {
   audioPlayerDiv.classList.add("hidden");
   videoPlayerDiv.classList.add("hidden");
 }
+
+// function loadUI() {
+  
+// }
 
 function playPause() {
   if (audioPlayer.paused) {
@@ -273,6 +280,15 @@ function populateEpisodeDropdown() {
         selectedEpisodes[selectedSeries] = selectedEpisode;
         saveUserSettings();
       }
+      // if (listeningHistory[selectedSeries] && listeningHistory[selectedSeries][selectedEpisode]) {
+      //   // Set the audio player's current time to the stored time
+      //   audioPlayer.currentTime = listeningHistory[selectedSeries][selectedEpisode];
+      //   console.log(`${selectedEpisode} has been played before. Setting audioPlayer.currentTime to ${audioPlayer.currentTime}`);
+      //   showVideoPlayerDiv();
+      // } else {
+      //   // If there's no stored time, start from the beginning
+      //   audioPlayer.currentTime = 0;
+      // }
     });
 }
 
