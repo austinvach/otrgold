@@ -8,5 +8,21 @@ module.exports = {
     require("@tailwindcss/typography"),
     require("daisyui")
   ],
+  daisyui: {
+    themes: [
+      {
+        light: {
+          ...require("daisyui/src/theming/themes")["light"],
+          primary: "#ccA854",
+        },
+      },
+      {
+        dark: {
+          ...require("daisyui/src/theming/themes")["dark"],
+          primary: "#ccA854",
+        },
+      },
+    ],
+  }
 }
 
