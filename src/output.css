@@ -1531,6 +1531,10 @@ html {
   min-height: 4rem;
 }
 
+.min-h-20 {
+  min-height: 5rem;
+}
+
 .w-6 {
   width: 1.5rem;
 }
