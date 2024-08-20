@@ -1535,6 +1535,10 @@ html {
   min-height: 5rem;
 }
 
+.min-h-24 {
+  min-height: 6rem;
+}
+
 .w-6 {
   width: 1.5rem;
 }
