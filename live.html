@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>OTR Gold | LIVE</title>
+  <link href="src/output.css" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <style>
+    .fadeOut {
+      opacity: 0;
+      transition: opacity 1s;
+    }
+
+    .visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- VIDEO PLAYER DIV -->
+  <div id="videoPlayerDiv" class="hidden relative">
+    <video id="seriesVideo" class="fixed top-0 left-0 h-screen w-full mx-auto" loop muted>
+      <source src="assets/titles/inner-sanctum.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <video id="introVideo" class="fixed top-0 left-0 h-screen w-full mx-auto" muted>
+      <source src="assets/intro.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div id="navbar" class="visible fixed top-0 left-0 opacity-0 transition-opacity navbar bg-neutral text-neutral-content">
+    <div class="navbar-start">
+      <a class="btn btn-ghost text-xl" href="https://otrgold.com">OTR Gold</a>
+    </div>
+    <div class="navbar-center hidden md:flex">
+      <!-- SERIES DROPDOWN -->
+      <div id="episodeSelectionDiv">
+        <select id="seriesDropdown" title="Series Dropdown"
+          class="select select-bordered w-fit max-w-xs">
+        </select>
+        <!-- EPISODE DROPDOWN -->
+        <select id="episodeDropdown" class="ml-1 select select-bordered w-fit max-w-xs"></select>
+        <button id="start" class="ml-1 btn">Start</button>
+      </div>
+      <div id="audioPlayerDiv" class="hidden items-center">
+        <audio id="audioPlayer" controls></audio>
+        <button id="exitButton" class="btn btn-circle ml-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+    <div class="navbar-end">
+    </div>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
