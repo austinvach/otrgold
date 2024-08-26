@@ -1565,6 +1565,14 @@ html {
   max-width: 20rem;
 }
 
+.max-w-\[480\] {
+  max-width: 480;
+}
+
+.max-w-\[480px\] {
+  max-width: 480px;
+}
+
 .shrink-\[\.25\] {
   flex-shrink: .25;
 }
