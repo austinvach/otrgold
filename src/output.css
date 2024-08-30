@@ -1608,6 +1608,26 @@ html {
   background-color: var(--fallback-n,oklch(var(--n)/var(--tw-bg-opacity)));
 }
 
+.bg-\[url\(\'\/assets\/otr\.png\'\)\] {
+  background-image: url('/assets/otr.png');
+}
+
+.bg-\[url\(\'\/assets\/otrblack\.png\'\)\] {
+  background-image: url('/assets/otrblack.png');
+}
+
+.bg-\[url\(\'\/assets\/otrblack50\.png\'\)\] {
+  background-image: url('/assets/otrblack50.png');
+}
+
+.bg-contain {
+  background-size: contain;
+}
+
+.bg-repeat {
+  background-repeat: repeat;
+}
+
 .fill-current {
   fill: currentColor;
 }
