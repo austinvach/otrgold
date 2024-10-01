@@ -1449,6 +1449,23 @@ html {
   padding: 0px;
 }
 
+.avatar.online:before {
+  content: "";
+  position: absolute;
+  z-index: 10;
+  display: block;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  background-color: var(--fallback-su,oklch(var(--su)/var(--tw-bg-opacity)));
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: var(--fallback-b1,oklch(var(--b1)/1));
+  width: 15%;
+  height: 15%;
+  top: 7%;
+  right: 7%;
+}
+
 .visible {
   visibility: visible;
 }
@@ -1492,6 +1509,11 @@ html {
   margin-bottom: 1.25rem;
 }
 
+.my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -1506,6 +1528,22 @@ html {
 
 .mt-16 {
   margin-top: 4rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
 }
 
 .flex {
@@ -1528,16 +1566,28 @@ html {
   height: 100vh;
 }
 
+.max-h-28 {
+  max-height: 7rem;
+}
+
 .max-h-32 {
   max-height: 8rem;
+}
+
+.max-h-4 {
+  max-height: 1rem;
+}
+
+.max-h-16 {
+  max-height: 4rem;
 }
 
 .min-h-10 {
   min-height: 2.5rem;
 }
 
-.min-h-28 {
-  min-height: 7rem;
+.min-h-24 {
+  min-height: 6rem;
 }
 
 .w-6 {
@@ -1553,6 +1603,10 @@ html {
   width: 100%;
 }
 
+.max-w-\[480px\] {
+  max-width: 480px;
+}
+
 .max-w-md {
   max-width: 28rem;
 }
@@ -1565,12 +1619,8 @@ html {
   max-width: 20rem;
 }
 
-.max-w-\[480\] {
-  max-width: 480;
-}
-
-.max-w-\[480px\] {
-  max-width: 480px;
+.max-w-24 {
+  max-width: 6rem;
 }
 
 .shrink-\[\.25\] {
@@ -1603,38 +1653,45 @@ html {
   margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
 }
 
+.space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(1rem * var(--tw-space-x-reverse));
+  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+}
+
 .bg-neutral {
   --tw-bg-opacity: 1;
   background-color: var(--fallback-n,oklch(var(--n)/var(--tw-bg-opacity)));
-}
-
-.bg-\[url\(\'\/assets\/otr\.png\'\)\] {
-  background-image: url('/assets/otr.png');
-}
-
-.bg-\[url\(\'\/assets\/otrblack\.png\'\)\] {
-  background-image: url('/assets/otrblack.png');
-}
-
-.bg-\[url\(\'\/assets\/otrblack50\.png\'\)\] {
-  background-image: url('/assets/otrblack50.png');
-}
-
-.bg-contain {
-  background-size: contain;
-}
-
-.bg-repeat {
-  background-repeat: repeat;
 }
 
 .fill-current {
   fill: currentColor;
 }
 
+.fill-neutral-200 {
+  fill: #e5e5e5;
+}
+
+.fill-neutral-50 {
+  fill: #fafafa;
+}
+
 .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
+}
+
+.text-left {
+  text-align: left;
 }
 
 .text-center {
@@ -1656,6 +1713,11 @@ html {
   line-height: 1.75rem;
 }
 
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
 .font-semibold {
   font-weight: 600;
 }
@@ -1667,6 +1729,16 @@ html {
 .text-neutral-content {
   --tw-text-opacity: 1;
   color: var(--fallback-nc,oklch(var(--nc)/var(--tw-text-opacity)));
+}
+
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity));
+}
+
+.text-primary {
+  --tw-text-opacity: 1;
+  color: var(--fallback-p,oklch(var(--p)/var(--tw-text-opacity)));
 }
 
 .underline {
@@ -1691,6 +1763,11 @@ html {
   transition-duration: 150ms;
 }
 
+.hover\:text-blue-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(29 78 216 / var(--tw-text-opacity));
+}
+
 @media (min-width: 768px) {
   .md\:flex {
     display: flex;
@@ -1698,7 +1775,7 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
-  .dark\:fill-white {
-    fill: #fff;
+  .dark\:fill-neutral-50 {
+    fill: #fafafa;
   }
 }
